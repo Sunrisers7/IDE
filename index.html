@@ -3,410 +3,1235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Python Master | Мобильный справочник</title>
+    <title>Python Master | Энциклопедия</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0a0c10; color: #c9d1d9; line-height: 1.6; min-height: 100vh; }
-        
-        /* Header */
-        .header { background: #161b22; padding: 12px 15px; border-bottom: 1px solid #30363d; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #58a6ff, #d2a8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
-        .menu-btn { background: none; border: none; color: #c9d1d9; font-size: 24px; cursor: pointer; padding: 5px 10px; display: none; }
-        .progress-container { display: flex; align-items: center; gap: 8px; background: #0d1117; padding: 4px 10px; border-radius: 20px; border: 1px solid #30363d; }
-        .progress-bar { width: 80px; height: 6px; background: #21262d; border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #238636, #58a6ff); width: 0%; transition: width 0.4s; }
-        .progress-text { color: #58a6ff; font-size: 11px; font-weight: 600; min-width: 35px; }
-        
-        /* Tab bar */
-        .tab-bar { display: flex; background: #161b22; padding: 8px 10px; gap: 5px; border-bottom: 1px solid #30363d; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .tab-bar::-webkit-scrollbar { display: none; }
-        .tab { padding: 10px 16px; background: transparent; border: none; color: #8b949e; font-size: 14px; cursor: pointer; border-radius: 20px; transition: 0.2s; white-space: nowrap; font-weight: 500; flex-shrink: 0; }
-        .tab:hover { background: #21262d; }
-        .tab.active { background: #1f6feb; color: white; }
-        
-        /* Main layout */
-        .main-container { display: flex; position: relative; }
-        
-        /* Sidebar - скрыта на мобильных, показывается по кнопке */
-        .nav-sidebar { width: 100%; max-width: 320px; background: #161b22; border-right: 1px solid #30363d; overflow-y: auto; padding: 15px; position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; transform: translateX(-100%); transition: transform 0.3s ease; }
-        .nav-sidebar.open { transform: translateX(0); }
-        .nav-sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #30363d; }
-        .nav-sidebar-header h3 { color: #58a6ff; font-size: 18px; }
-        .close-btn { background: none; border: none; color: #c9d1d9; font-size: 28px; cursor: pointer; padding: 5px 10px; }
-        .nav-section { margin-bottom: 25px; }
-        .nav-section h3 { color: #58a6ff; margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .nav-item { padding: 12px 14px; color: #c9d1d9; text-decoration: none; display: flex; align-items: center; gap: 10px; border-radius: 8px; font-size: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 3px; -webkit-tap-highlight-color: transparent; }
-        .nav-item:active { background: #1f6feb; }
-        .nav-item.completed::after { content: "✓"; margin-left: auto; color: #238636; font-weight: bold; }
-        
-        /* Overlay for mobile menu */
-        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
-        .overlay.show { display: block; }
-        
-        /* Content area */
-        .content-area { flex: 1; padding: 20px 15px; background: #0d1117; min-height: calc(100vh - 120px); }
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .wiki-article h1 { color: #f0f6fc; font-size: 26px; margin-bottom: 15px; border-bottom: 2px solid #30363d; padding-bottom: 12px; }
-        .wiki-article h2 { color: #f0f6fc; font-size: 22px; margin: 30px 0 15px; border-bottom: 1px solid #30363d; padding-bottom: 8px; }
-        .wiki-article h3 { color: #d2a8ff; font-size: 18px; margin: 20px 0 12px; }
-        .wiki-article p { margin-bottom: 15px; font-size: 15px; }
-        .wiki-article code { background: #21262d; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #a5d6ff; word-break: break-word; }
-        
-        /* Code blocks */
-        .code-block { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; margin: 20px 0; overflow: hidden; }
-        .code-header { background: #21262d; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; flex-wrap: wrap; gap: 10px; }
-        .code-title { color: #8b949e; font-size: 13px; font-weight: 600; }
-        .copy-btn { background: #30363d; border: none; color: #c9d1d9; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; -webkit-tap-highlight-color: transparent; min-height: 40px; }
-        .copy-btn:active { background: #1f6feb; }
-        .code-content { padding: 15px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .code-content pre { margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: #e6edf3; white-space: pre-wrap; word-break: break-word; }
-        
-        /* Syntax */
-        .keyword { color: #ff7b72; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0c10 0%, #0d1117 100%);
+            color: #c9d1d9;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Анимированный фон */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(88, 166, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(210, 168, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(35, 134, 54, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Модальное окно выбора устройства */
+        .device-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 12, 16, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .device-modal.hidden {
+            display: none;
+        }
+
+        .device-card {
+            background: linear-gradient(145deg, #161b22, #0d1117);
+            border: 1px solid #30363d;
+            border-radius: 32px;
+            padding: 45px 35px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(88, 166, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .device-card h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #58a6ff, #d2a8ff, #58a6ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .device-card p {
+            color: #8b949e;
+            margin-bottom: 35px;
+            font-size: 17px;
+        }
+
+        .device-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .device-btn {
+            background: linear-gradient(145deg, #21262d, #1a1f2a);
+            border: 2px solid #30363d;
+            border-radius: 20px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .device-btn:hover {
+            border-color: #58a6ff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(88, 166, 255, 0.2);
+        }
+
+        .device-btn.selected {
+            border-color: #58a6ff;
+            background: linear-gradient(145deg, #1f2937, #111827);
+            box-shadow: 0 0 30px rgba(88, 166, 255, 0.3), inset 0 0 20px rgba(88, 166, 255, 0.1);
+        }
+
+        .device-icon {
+            font-size: 56px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .device-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .device-info h3 {
+            color: #f0f6fc;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .device-info span {
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .continue-btn {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            border: none;
+            border-radius: 16px;
+            padding: 18px;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 30px;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(35, 134, 54, 0.3);
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(35, 134, 54, 0.4);
+        }
+
+        .auto-detect {
+            margin-top: 22px;
+            color: #58a6ff;
+            cursor: pointer;
+            font-size: 15px;
+            text-decoration: none;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+
+        .auto-detect:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        /* Основной интерфейс */
+        .app-container {
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-container.visible {
+            display: block;
+        }
+
+        /* Хедер */
+        .header {
+            background: linear-gradient(135deg, #161b22, #0d1117);
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-weight: 800;
+            background: linear-gradient(135deg, #58a6ff, #d2a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "🐍";
+            -webkit-text-fill-color: initial;
+            color: #58a6ff;
+            font-size: 28px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .device-toggle {
+            background: linear-gradient(145deg, #21262d, #1a1f2a);
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .device-toggle:hover {
+            border-color: #58a6ff;
+            background: linear-gradient(145deg, #1f2937, #111827);
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(13, 17, 23, 0.8);
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid #30363d;
+            backdrop-filter: blur(5px);
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #21262d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #238636, #58a6ff, #d2a8ff);
+            background-size: 200% 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            animation: progressGlow 2s ease infinite;
+        }
+
+        @keyframes progressGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .progress-text {
+            color: #58a6ff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Табы */
+        .tab-bar {
+            display: flex;
+            background: rgba(22, 27, 34, 0.9);
+            gap: 8px;
+            border-bottom: 1px solid #30363d;
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+        }
+
+        .tab {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #58a6ff, #d2a8ff);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+
+        .tab:hover::before {
+            opacity: 0.1;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #1f6feb, #1a5bc2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(31, 111, 235, 0.3);
+        }
+
+        /* Контент */
+        .content-area {
+            flex: 1;
+            background: transparent;
+            min-height: calc(100vh - 120px);
+            position: relative;
+        }
+
+        .page {
+            display: none;
+            animation: pageFade 0.4s ease;
+        }
+
+        @keyframes pageFade {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Wiki стили */
+        .wiki-article {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .wiki-article h1 {
+            color: #f0f6fc;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid;
+            border-image: linear-gradient(90deg, #58a6ff, #d2a8ff, transparent) 1;
+            font-size: 34px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f0f6fc, #c9d1d9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .wiki-article h2 {
+            color: #f0f6fc;
+            margin: 35px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .wiki-article h3 {
+            color: #d2a8ff;
+            margin: 25px 0 15px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Карточки библиотек */
+        .lib-grid {
+            display: grid;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .lib-card {
+            background: linear-gradient(145deg, #161b22, #0d1117);
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lib-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #58a6ff, #d2a8ff);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .lib-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .lib-card:hover {
+            transform: translateY(-5px);
+            border-color: #58a6ff;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(88, 166, 255, 0.2);
+        }
+
+        .lib-card h4 {
+            color: #58a6ff;
+            font-size: 22px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lib-card p {
+            color: #8b949e;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .lib-card .install-cmd {
+            background: #21262d;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #a5d6ff;
+            border: 1px solid #30363d;
+            font-size: 14px;
+        }
+
+        .lib-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1f6feb, #6e40c9);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Блоки кода */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            margin: 25px 0;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .code-header {
+            background: linear-gradient(135deg, #21262d, #1a1f2a);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .code-title {
+            color: #8b949e;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #30363d, #21262d);
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #1f6feb, #1a5bc2);
+            border-color: #58a6ff;
+        }
+
+        .code-content {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            line-height: 1.6;
+            color: #e6edf3;
+        }
+
+        /* Синтаксис */
+        .keyword { color: #ff7b72; font-weight: 600; }
         .string { color: #a5d6ff; }
         .comment { color: #8b949e; font-style: italic; }
         .function { color: #d2a8ff; }
         .number { color: #79c0ff; }
         .builtin { color: #ffa657; }
-        
-        /* Tables */
-        .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #0d1117; border-radius: 10px; overflow: hidden; border: 1px solid #30363d; font-size: 13px; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .data-table th { background: #21262d; color: #58a6ff; padding: 12px 10px; text-align: left; white-space: nowrap; }
-        .data-table td { padding: 10px; border-bottom: 1px solid #30363d; }
-        .data-table .command { font-family: 'JetBrains Mono', monospace; color: #79c0ff; }
-        
-        /* Info boxes */
-        .info-box { background: #1a1f2a; border-left: 4px solid #58a6ff; padding: 15px; margin: 20px 0; border-radius: 0 10px 10px 0; }
-        .info-box.warning { background: #1f1a1a; border-left-color: #f85149; }
-        .info-box.success { background: #1a3320; border-left-color: #238636; }
-        .info-box .title { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: #f0f6fc; }
-        
-        /* Task cards */
-        .task-card { background: #1a1f2a; border: 1px solid #30363d; border-radius: 16px; padding: 20px 15px; margin: 25px 0; border-left: 5px solid #58a6ff; }
-        .task-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-        .task-title { color: #f0f6fc; font-size: 18px; font-weight: 700; }
-        .difficulty { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-        .difficulty.easy { background: #238636; color: white; }
-        .difficulty.medium { background: #9e6a03; color: white; }
-        .difficulty.hard { background: #f85149; color: white; }
-        .task-description { font-size: 14px; margin-bottom: 15px; }
-        
-        details { margin-top: 15px; }
-        summary { cursor: pointer; color: #58a6ff; font-weight: 600; padding: 10px 0; -webkit-tap-highlight-color: transparent; }
-        
-        /* Grids */
-        .lib-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin: 20px 0; }
-        .lib-card { background: #0d1117; border: 1px solid #30363d; border-radius: 14px; padding: 18px; }
-        .lib-card h4 { color: #58a6ff; font-size: 18px; margin-bottom: 8px; }
-        .lib-card p { font-size: 14px; margin-bottom: 12px; color: #8b949e; }
-        .lib-card .install-cmd { background: #21262d; padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 12px; color: #a5d6ff; word-break: break-all; }
-        
-        .badge { background: #1f6feb; color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; margin-right: 8px; }
-        
-        /* Desktop styles */
-        @media (min-width: 768px) {
-            .menu-btn { display: none !important; }
-            .nav-sidebar { position: static; transform: none !important; width: 300px; }
-            .nav-sidebar-header { display: none; }
-            .overlay { display: none !important; }
-            .main-container { display: flex; }
-            .lib-grid { grid-template-columns: repeat(2, 1fr); }
-            .tab-bar { padding: 8px 20px; }
-            .content-area { padding: 30px 40px; }
-            .wiki-article h1 { font-size: 32px; }
-            .code-content pre { font-size: 13px; }
-            .data-table { font-size: 14px; display: table; }
+        .decorator { color: #d2a8ff; }
+
+        /* Таблицы */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: #0d1117;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #30363d;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        
-        @media (min-width: 1024px) {
-            .lib-grid { grid-template-columns: repeat(3, 1fr); }
+
+        .data-table th {
+            background: linear-gradient(135deg, #21262d, #1a1f2a);
+            color: #58a6ff;
+            padding: 16px 18px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .data-table .command {
+            font-family: 'JetBrains Mono', monospace;
+            color: #79c0ff;
+            font-weight: 500;
+        }
+
+        /* Бейджи */
+        .badge {
+            background: linear-gradient(135deg, #1f6feb, #6e40c9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-right: 10px;
+            box-shadow: 0 4px 10px rgba(31, 111, 235, 0.2);
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #f85149, #d2a8ff);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Инфо боксы */
+        .info-box {
+            background: linear-gradient(145deg, #1a1f2a, #131820);
+            border-left: 5px solid #58a6ff;
+            padding: 20px 25px;
+            margin: 30px 0;
+            border-radius: 0 16px 16px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-box.warning {
+            background: linear-gradient(145deg, #1f1a1a, #181313);
+            border-left-color: #f85149;
+        }
+
+        .info-box.success {
+            background: linear-gradient(145deg, #1a3320, #142818);
+            border-left-color: #238636;
+        }
+
+        .info-box .title {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #f0f6fc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Навигация */
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section h3 {
+            color: #58a6ff;
+            margin: 0 0 15px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding-left: 12px;
+        }
+
+        .nav-item {
+            color: #c9d1d9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(135deg, #58a6ff, #d2a8ff);
+            transform: scaleY(0);
+            transition: transform 0.2s;
+        }
+
+        .nav-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(90deg, rgba(88, 166, 255, 0.1), transparent);
+            color: #f0f6fc;
+        }
+
+        .nav-item.completed::after {
+            content: "✓";
+            margin-left: auto;
+            color: #238636;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Задания */
+        .task-card {
+            background: linear-gradient(145deg, #161b22, #0d1117);
+            border: 1px solid #30363d;
+            border-radius: 24px;
+            padding: 30px;
+            margin: 30px 0;
+            border-left: 6px solid #58a6ff;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .task-card:hover {
+            border-left-width: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .task-title {
+            color: #f0f6fc;
+            font-weight: 700;
+            font-size: 24px;
+        }
+
+        .difficulty {
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .difficulty.easy {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            color: white;
+            box-shadow: 0 4px 10px rgba(35, 134, 54, 0.3);
+        }
+
+        .difficulty.medium {
+            background: linear-gradient(135deg, #9e6a03, #c47d00);
+            color: white;
+            box-shadow: 0 4px 10px rgba(158, 106, 3, 0.3);
+        }
+
+        .difficulty.hard {
+            background: linear-gradient(135deg, #f85149, #da3633);
+            color: white;
+            box-shadow: 0 4px 10px rgba(248, 81, 73, 0.3);
+        }
+
+        details summary {
+            cursor: pointer;
+            color: #58a6ff;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 12px 0;
+            transition: all 0.2s;
+        }
+
+        details summary:hover {
+            color: #79c0ff;
+        }
+
+        /* Адаптация */
+        body.phone-mode .header {
+            padding: 12px 15px;
+        }
+
+        body.phone-mode .logo {
+            font-size: 20px;
+        }
+
+        body.phone-mode .logo::before {
+            font-size: 24px;
+        }
+
+        body.phone-mode .menu-btn {
+            display: block;
+            background: linear-gradient(135deg, #21262d, #1a1f2a);
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 10px;
+        }
+
+        body.phone-mode .tab-bar {
+            padding: 8px 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-wrap: nowrap;
+        }
+
+        body.phone-mode .tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        body.phone-mode .tab {
+            padding: 10px 18px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        body.phone-mode .nav-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 320px;
+            background: linear-gradient(145deg, #161b22, #0d1117);
+            z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            padding: 20px 15px;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+        }
+
+        body.phone-mode .nav-sidebar.open {
+            transform: translateX(0);
+        }
+
+        body.phone-mode .nav-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        body.phone-mode .close-btn {
+            background: none;
+            border: none;
+            color: #c9d1d9;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 5px 12px;
+        }
+
+        body.phone-mode .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 150;
+            display: none;
+        }
+
+        body.phone-mode .overlay.show {
+            display: block;
+        }
+
+        body.phone-mode .content-area {
+            padding: 15px;
+        }
+
+        body.phone-mode .wiki-article h1 {
+            font-size: 26px;
+        }
+
+        body.phone-mode .wiki-article h2 {
+            font-size: 22px;
+        }
+
+        body.phone-mode .code-content pre {
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        body.phone-mode .data-table {
+            font-size: 13px;
+            display: block;
+            overflow-x: auto;
+        }
+
+        body.phone-mode .lib-grid {
+            grid-template-columns: 1fr;
+        }
+
+        body.phone-mode .task-card {
+            padding: 20px 15px;
+        }
+
+        body.phone-mode .nav-item {
+            padding: 15px 14px;
+            font-size: 16px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body.phone-mode .copy-btn {
+            min-height: 44px;
+            padding: 10px 18px;
+        }
+
+        /* ПК режим */
+        body.pc-mode .header {
+            padding: 14px 30px;
+        }
+
+        body.pc-mode .logo {
+            font-size: 26px;
+        }
+
+        body.pc-mode .menu-btn {
+            display: none;
+        }
+
+        body.pc-mode .tab-bar {
+            padding: 10px 30px;
+        }
+
+        body.pc-mode .tab {
+            padding: 10px 24px;
+            font-size: 16px;
+        }
+
+        body.pc-mode .main-container {
+            display: flex;
+        }
+
+        body.pc-mode .nav-sidebar {
+            position: sticky;
+            top: 70px;
+            width: 320px;
+            transform: none !important;
+            padding: 25px 15px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+            background: transparent;
+        }
+
+        body.pc-mode .nav-sidebar-header {
+            display: none;
+        }
+
+        body.pc-mode .overlay {
+            display: none !important;
+        }
+
+        body.pc-mode .content-area {
+            padding: 35px 45px;
+        }
+
+        body.pc-mode .wiki-article h1 {
+            font-size: 38px;
+        }
+
+        body.pc-mode .wiki-article h2 {
+            font-size: 28px;
+        }
+
+        body.pc-mode .code-content pre {
+            font-size: 14px;
+        }
+
+        body.pc-mode .lib-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 1400px) {
+            body.pc-mode .lib-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
     </style>
 </head>
 <body>
 
-<header class="header">
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="logo">🐍 Python Master</div>
-    <div class="header-right">
-        <div class="progress-container">
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <span class="progress-text" id="progressText">0%</span>
+<!-- Модальное окно выбора устройства -->
+<div class="device-modal" id="deviceModal">
+    <div class="device-card">
+        <h1>🐍 Python Master</h1>
+        <p>Выберите устройство для идеального отображения</p>
+        
+        <div class="device-buttons">
+            <div class="device-btn" id="selectPhone" onclick="selectDevice('phone')">
+                <span class="device-icon">📱</span>
+                <div class="device-info">
+                    <h3>Телефон</h3>
+                    <span>Оптимизировано для сенсорного управления</span>
+                </div>
+            </div>
+            
+            <div class="device-btn" id="selectPC" onclick="selectDevice('pc')">
+                <span class="device-icon">💻</span>
+                <div class="device-info">
+                    <h3>Компьютер</h3>
+                    <span>Полноценный интерфейс с боковой панелью</span>
+                </div>
+            </div>
         </div>
+        
+        <button class="continue-btn" id="continueBtn" onclick="applyDevice()">🚀 Продолжить</button>
+        <div class="auto-detect" onclick="autoDetect()">🔍 Определить автоматически</div>
     </div>
-</header>
-
-<div class="tab-bar">
-    <button class="tab active" onclick="switchTab('learn')">📚 Справочник</button>
-    <button class="tab" onclick="switchTab('tasks')">💪 Задания</button>
-    <button class="tab" onclick="switchTab('github')">🔗 GitHub</button>
 </div>
 
-<div class="main-container">
-    <div class="overlay" id="overlay" onclick="closeMenu()"></div>
-    
-    <div class="nav-sidebar" id="navSidebarContainer">
-        <div class="nav-sidebar-header">
-            <h3>📑 Содержание</h3>
-            <button class="close-btn" onclick="closeMenu()">✕</button>
+<!-- Основное приложение -->
+<div class="app-container" id="appContainer">
+    <header class="header">
+        <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">☰</button>
+        <div class="logo">Python Master</div>
+        <div class="header-right">
+            <button class="device-toggle" onclick="showDeviceModal()">
+                <span id="deviceIcon">📱</span>
+                <span id="deviceLabel">Телефон</span>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="progress-text" id="progressText">0%</span>
+            </div>
         </div>
-        <div id="navSidebar"></div>
+    </header>
+
+    <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('learn')">📚 Справочник</button>
+        <button class="tab" onclick="switchTab('tasks')">💪 Задания</button>
+        <button class="tab" onclick="switchTab('github')">🔗 GitHub</button>
     </div>
 
-    <div class="content-area">
-        <div id="learn-page" class="page active"><div id="learn-content"></div></div>
-        <div id="tasks-page" class="page"><div id="tasks-content"></div></div>
-        <div id="github-page" class="page"><div id="github-content"></div></div>
+    <div class="main-container">
+        <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+        
+        <div class="nav-sidebar" id="navSidebarContainer">
+            <div class="nav-sidebar-header">
+                <h3>📑 Содержание</h3>
+                <button class="close-btn" onclick="closeMenu()">✕</button>
+            </div>
+            <div id="navSidebar"></div>
+        </div>
+
+        <div class="content-area">
+            <div id="learn-page" class="page active"><div id="learn-content"></div></div>
+            <div id="tasks-page" class="page"><div id="tasks-content"></div></div>
+            <div id="github-page" class="page"><div id="github-content"></div></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // ==================== СОДЕРЖИМОЕ ====================
+    // ==================== ПОЛНОЕ СОДЕРЖИМОЕ ====================
     const courseContent = {
+        // Основы
         'print-input': { title: '🖨️ print() и input()', content: `
             <h1>🖨️ print() — вывод на экран</h1>
-            <p><code>print()</code> выводит текст или значения в консоль.</p>
-            <table class="data-table"><tr><th>Параметр</th><th>Описание</th></tr>
-            <tr><td class="command">sep</td><td>Разделитель (по умолчанию пробел)</td></tr>
-            <tr><td class="command">end</td><td>Что в конце (по умолчанию перенос строки)</td></tr>
-            <tr><td class="command">file</td><td>Куда выводить</td></tr></table>
-            <div class="code-block"><div class="code-header"><span class="code-title">Примеры</span><button class="copy-btn" onclick="copyCode(this)">📋 Копировать</button></div><div class="code-content"><pre><span class="builtin">print</span>(<span class="string">"Hello!"</span>)
-<span class="builtin">print</span>(<span class="string">"A"</span>, <span class="string">"B"</span>, sep=<span class="string">"-"</span>)  <span class="comment"># A-B</span>
-name = <span class="string">"Анна"</span>
-<span class="builtin">print</span>(<span class="string">f"Привет, </span>{name}<span class="string">!"</span>)  <span class="comment"># f-строка</span></pre></div></div>
+            <p>Функция <code>print()</code> выводит данные в консоль. Можно передавать несколько аргументов через запятую.</p>
+            <div class="code-block"><div class="code-header"><span class="code-title">📝 Примеры использования</span><button class="copy-btn" onclick="copyCode(this)">📋 Копировать</button></div><div class="code-content"><pre><span class="builtin">print</span>(<span class="string">"Привет, мир!"</span>)
+<span class="builtin">print</span>(<span class="string">"Python"</span>, <span class="string">"это"</span>, <span class="string">"круто!"</span>)  <span class="comment"># Python это круто!</span>
+<span class="builtin">print</span>(<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>, sep=<span class="string">"-"</span>)  <span class="comment"># A-B-C</span>
+<span class="builtin">print</span>(<span class="string">"Привет"</span>, end=<span class="string">"!"</span>)  <span class="comment"># Привет!</span></pre></div></div>
+            <div class="info-box success"><div class="title">💡 f-строки — лучший способ форматирования</div><p>Просто поставьте <code>f</code> перед кавычками и вставляйте переменные в <code>{ }</code>.</p></div>
+            <div class="code-block"><div class="code-content"><pre>name = <span class="string">"Анна"</span>
+age = <span class="number">25</span>
+<span class="builtin">print</span>(<span class="string">f"Меня зовут </span>{name}<span class="string">, мне </span>{age}<span class="string"> лет"</span>)
+<span class="builtin">print</span>(<span class="string">f"Через 5 лет будет </span>{age + <span class="number">5</span>}<span class="string">"</span>)</pre></div></div>
             <h2>📥 input() — ввод данных</h2>
-            <div class="info-box warning"><div class="title">⚠️ Важно!</div><p><code>input()</code> всегда возвращает строку. Для чисел используйте <code>int()</code> или <code>float()</code>.</p></div>
-            <div class="code-block"><div class="code-content"><pre>name = <span class="builtin">input</span>(<span class="string">"Имя: "</span>)
-age = <span class="builtin">int</span>(<span class="builtin">input</span>(<span class="string">"Возраст: "</span>))
-<span class="builtin">print</span>(<span class="string">f"</span>{name}<span class="string">, через 5 лет: </span>{age+5}<span class="string">"</span>)</pre></div></div>
+            <div class="info-box warning"><div class="title">⚠️ Внимание!</div><p><code>input()</code> всегда возвращает строку! Для чисел нужно преобразование.</p></div>
+            <div class="code-block"><div class="code-content"><pre>name = <span class="builtin">input</span>(<span class="string">"Как вас зовут? "</span>)
+age = <span class="builtin">int</span>(<span class="builtin">input</span>(<span class="string">"Сколько вам лет? "</span>))
+<span class="builtin">print</span>(<span class="string">f"Привет, </span>{name}<span class="string">! Через 10 лет вам будет </span>{age + <span class="number">10</span>}<span class="string">"</span>)</pre></div></div>
         `},
         
         'variables': { title: '📦 Переменные и типы', content: `
-            <h1>📦 Переменные и типы данных</h1>
-            <table class="data-table"><tr><th>Тип</th><th>Пример</th></tr>
-            <tr><td class="command">int</td><td>42, -7</td></tr>
-            <tr><td class="command">float</td><td>3.14</td></tr>
-            <tr><td class="command">str</td><td>"Hello"</td></tr>
-            <tr><td class="command">bool</td><td>True/False</td></tr>
-            <tr><td class="command">list</td><td>[1,2,3]</td></tr>
-            <tr><td class="command">tuple</td><td>(1,2,3)</td></tr>
-            <tr><td class="command">dict</td><td>{"a":1}</td></tr>
-            <tr><td class="command">set</td><td>{1,2,3}</td></tr></table>
-            <h2>Преобразование</h2>
-            <div class="code-block"><div class="code-content"><pre><span class="builtin">int</span>(<span class="string">"123"</span>)     <span class="comment"># 123</span>
-<span class="builtin">str</span>(<span class="number">123</span>)       <span class="comment"># "123"</span>
-<span class="builtin">list</span>(<span class="string">"abc"</span>)   <span class="comment"># ['a','b','c']</span></pre></div></div>
+            <h1>📦 Переменные — контейнеры для данных</h1>
+            <p>Переменная — это именованная область памяти. Python сам определяет тип по значению.</p>
+            <table class="data-table"><tr><th>Тип</th><th>Пример</th><th>Изменяемый?</th></tr>
+            <tr><td class="command">int</td><td>42, -7, 1_000_000</td><td>Нет</td></tr>
+            <tr><td class="command">float</td><td>3.14, 2.5e6</td><td>Нет</td></tr>
+            <tr><td class="command">str</td><td>"Hello", 'Python'</td><td>Нет</td></tr>
+            <tr><td class="command">bool</td><td>True, False</td><td>Нет</td></tr>
+            <tr><td class="command">list</td><td>[1, 2, 3]</td><td>✅ Да</td></tr>
+            <tr><td class="command">tuple</td><td>(1, 2, 3)</td><td>❌ Нет</td></tr>
+            <tr><td class="command">dict</td><td>{"key": "value"}</td><td>✅ Да</td></tr>
+            <tr><td class="command">set</td><td>{1, 2, 3}</td><td>✅ Да</td></tr></table>
+            <div class="code-block"><div class="code-content"><pre><span class="comment"># Преобразование типов</span>
+num = <span class="builtin">int</span>(<span class="string">"123"</span>)        <span class="comment"># 123</span>
+text = <span class="builtin">str</span>(<span class="number">123</span>)         <span class="comment"># "123"</span>
+chars = <span class="builtin">list</span>(<span class="string">"abc"</span>)   <span class="comment"># ['a', 'b', 'c']</span></pre></div></div>
         `},
         
-        'operators': { title: '🔢 Операторы', content: `
-            <h1>🔢 Операторы</h1>
-            <table class="data-table"><tr><th>Оператор</th><th>Описание</th></tr>
-            <tr><td class="command">+ - * /</td><td>Сложение, вычитание, умножение, деление</td></tr>
-            <tr><td class="command">//</td><td>Целочисленное деление</td></tr>
-            <tr><td class="command">%</td><td>Остаток от деления</td></tr>
-            <tr><td class="command">**</td><td>Возведение в степень</td></tr>
-            <tr><td class="command">== != > < >= <=</td><td>Сравнения</td></tr>
-            <tr><td class="command">and or not</td><td>Логические</td></tr></table>
-        `},
+        'operators': { title: '🔢 Операторы', content: `<h1>🔢 Операторы Python</h1><table class="data-table"><tr><th>Категория</th><th>Операторы</th></tr><tr><td>Арифметика</td><td class="command">+ - * / // % **</td></tr><tr><td>Сравнения</td><td class="command">== != > < >= <=</td></tr><tr><td>Логические</td><td class="command">and or not</td></tr><tr><td>Присваивания</td><td class="command">= += -= *= /=</td></tr></table>`},
         
-        'conditions': { title: '🔀 Условные операторы', content: `
-            <h1>🔀 if / elif / else</h1>
-            <div class="code-block"><div class="code-content"><pre>age = <span class="number">18</span>
+        'conditions': { title: '🔀 Условия', content: `<h1>🔀 if / elif / else</h1><div class="code-block"><div class="code-content"><pre>age = <span class="number">20</span>
 <span class="keyword">if</span> age >= <span class="number">18</span>:
-    <span class="builtin">print</span>(<span class="string">"Совершеннолетний"</span>)
+    <span class="builtin">print</span>(<span class="string">"Можно голосовать"</span>)
 <span class="keyword">elif</span> age >= <span class="number">14</span>:
     <span class="builtin">print</span>(<span class="string">"Подросток"</span>)
 <span class="keyword">else</span>:
-    <span class="builtin">print</span>(<span class="string">"Ребёнок"</span>)
-
-<span class="comment"># Тернарный оператор</span>
-status = <span class="string">"Прошёл"</span> <span class="keyword">if</span> score >= <span class="number">60</span> <span class="keyword">else</span> <span class="string">"Не прошёл"</span></pre></div></div>
-        `},
+    <span class="builtin">print</span>(<span class="string">"Ребёнок"</span>)</pre></div></div>`},
         
-        'loops': { title: '🔄 Циклы', content: `
-            <h1>🔄 Циклы</h1>
-            <h2>for</h2>
-            <div class="code-block"><div class="code-content"><pre><span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">5</span>):
-    <span class="builtin">print</span>(i)  <span class="comment"># 0-4</span>
+        'loops': { title: '🔄 Циклы', content: `<h1>🔄 Циклы</h1><h2>for</h2><div class="code-block"><div class="code-content"><pre><span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">5</span>):
+    <span class="builtin">print</span>(i)  <span class="comment"># 0,1,2,3,4</span>
 
 fruits = [<span class="string">"яблоко"</span>, <span class="string">"банан"</span>]
-<span class="keyword">for</span> idx, fruit <span class="keyword">in</span> <span class="builtin">enumerate</span>(fruits):
-    <span class="builtin">print</span>(<span class="string">f"</span>{idx}<span class="string">: </span>{fruit}<span class="string">"</span>)</pre></div></div>
-            <h2>while</h2>
-            <div class="code-block"><div class="code-content"><pre>i = <span class="number">0</span>
+<span class="keyword">for</span> i, fruit <span class="keyword">in</span> <span class="builtin">enumerate</span>(fruits):
+    <span class="builtin">print</span>(<span class="string">f"</span>{i}<span class="string">: </span>{fruit}<span class="string">"</span>)</pre></div></div><h2>while</h2><div class="code-block"><div class="code-content"><pre>i = <span class="number">0</span>
 <span class="keyword">while</span> i < <span class="number">5</span>:
     <span class="builtin">print</span>(i)
-    i += <span class="number">1</span></pre></div></div>
-            <h2>List comprehension</h2>
-            <div class="code-block"><div class="code-content"><pre>squares = [x**<span class="number">2</span> <span class="keyword">for</span> x <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">10</span>)]</pre></div></div>
-        `},
+    i += <span class="number">1</span></pre></div></div>`},
         
-        'functions': { title: '⚙️ Функции', content: `
-            <h1>⚙️ Функции</h1>
-            <div class="code-block"><div class="code-content"><pre><span class="keyword">def</span> <span class="function">greet</span>(name, greeting=<span class="string">"Привет"</span>):
+        'functions': { title: '⚙️ Функции', content: `<h1>⚙️ Функции def</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">def</span> <span class="function">greet</span>(name, greeting=<span class="string">"Привет"</span>):
     <span class="keyword">return</span> <span class="string">f"</span>{greeting}<span class="string">, </span>{name}<span class="string">!"</span>
 
-<span class="keyword">def</span> <span class="function">sum_all</span>(*args):
-    <span class="keyword">return</span> <span class="builtin">sum</span>(args)
-
-square = <span class="keyword">lambda</span> x: x**<span class="number">2</span></pre></div></div>
-        `},
+<span class="builtin">print</span>(greet(<span class="string">"Мир"</span>))  <span class="comment"># Привет, Мир!</span></pre></div></div>`},
         
-        'lists': { title: '📋 Списки и кортежи', content: `
-            <h1>📋 Списки</h1>
-            <table class="data-table"><tr><th>Метод</th><th>Описание</th></tr>
-            <tr><td class="command">.append(x)</td><td>Добавить</td></tr>
-            <tr><td class="command">.insert(i,x)</td><td>Вставить</td></tr>
-            <tr><td class="command">.remove(x)</td><td>Удалить</td></tr>
-            <tr><td class="command">.pop()</td><td>Удалить последний</td></tr>
-            <tr><td class="command">.sort()</td><td>Сортировать</td></tr></table>
-            <h2>Кортежи</h2>
-            <p>Неизменяемые: <code>t = (1, 2, 3)</code></p>
-        `},
+        'lists': { title: '📋 Списки', content: `<h1>📋 Списки (list)</h1><table class="data-table"><tr><th>Метод</th><th>Действие</th></tr><tr><td class="command">.append(x)</td><td>Добавить</td></tr><tr><td class="command">.insert(i,x)</td><td>Вставить</td></tr><tr><td class="command">.remove(x)</td><td>Удалить</td></tr><tr><td class="command">.pop()</td><td>Удалить последний</td></tr><tr><td class="command">.sort()</td><td>Сортировать</td></tr></table>`},
         
-        'dicts': { title: '📖 Словари', content: `
-            <h1>📖 Словари</h1>
-            <table class="data-table"><tr><th>Метод</th><th>Описание</th></tr>
-            <tr><td class="command">.get(key)</td><td>Получить значение</td></tr>
-            <tr><td class="command">.keys()</td><td>Ключи</td></tr>
-            <tr><td class="command">.values()</td><td>Значения</td></tr>
-            <tr><td class="command">.items()</td><td>Пары</td></tr>
-            <tr><td class="command">.update(d)</td><td>Обновить</td></tr></table>
-        `},
+        'dicts': { title: '📖 Словари', content: `<h1>📖 Словари (dict)</h1><table class="data-table"><tr><th>Метод</th><th>Описание</th></tr><tr><td class="command">.get(key)</td><td>Безопасное получение</td></tr><tr><td class="command">.keys()</td><td>Ключи</td></tr><tr><td class="command">.values()</td><td>Значения</td></tr><tr><td class="command">.items()</td><td>Пары</td></tr></table>`},
         
-        'strings': { title: '📝 Строки', content: `
-            <h1>📝 Строки</h1>
-            <table class="data-table"><tr><th>Метод</th><th>Пример</th></tr>
-            <tr><td class="command">.upper()</td><td>"hi".upper() → "HI"</td></tr>
-            <tr><td class="command">.lower()</td><td>"HI".lower() → "hi"</td></tr>
-            <tr><td class="command">.strip()</td><td>" hi ".strip() → "hi"</td></tr>
-            <tr><td class="command">.split()</td><td>"a,b".split(",") → ['a','b']</td></tr>
-            <tr><td class="command">.join()</td><td>",".join(['a','b']) → "a,b"</td></tr>
-            <tr><td class="command">.replace()</td><td>"hi".replace("i","e") → "he"</td></tr>
-            <tr><td class="command">.find()</td><td>"hi".find("i") → 1</td></tr></table>
-        `},
+        'strings': { title: '📝 Строки', content: `<h1>📝 Методы строк</h1><table class="data-table"><tr><th>Метод</th><th>Пример</th></tr><tr><td class="command">.upper()</td><td>"hi".upper() → "HI"</td></tr><tr><td class="command">.split()</td><td>"a,b".split(",") → ['a','b']</td></tr><tr><td class="command">.join()</td><td>",".join(['a','b']) → "a,b"</td></tr><tr><td class="command">.replace()</td><td>"hi".replace("i","e") → "he"</td></tr></table>`},
         
-        'files': { title: '📂 Файлы', content: `
-            <h1>📂 Работа с файлами</h1>
-            <div class="code-block"><div class="code-content"><pre><span class="comment"># Чтение</span>
-<span class="keyword">with</span> <span class="builtin">open</span>(<span class="string">'file.txt'</span>, <span class="string">'r'</span>) <span class="keyword">as</span> f:
-    content = f.read()
-
-<span class="comment"># Запись</span>
+        'files': { title: '📂 Файлы', content: `<h1>📂 Работа с файлами</h1><div class="code-block"><div class="code-content"><pre><span class="comment"># Запись</span>
 <span class="keyword">with</span> <span class="builtin">open</span>(<span class="string">'file.txt'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> f:
-    f.write(<span class="string">"Hello"</span>)</pre></div></div>
-            <p><strong>Режимы:</strong> r-чтение, w-запись, a-добавление</p>
-        `},
-        
-        'cam-list': { title: '📷 Список камер', content: `<h1>📷 Поиск камер</h1><span class="badge">pip install opencv-python</span><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> cv2
-<span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">5</span>):
-    cap = cv2.VideoCapture(i)
-    <span class="keyword">if</span> cap.isOpened():
-        <span class="builtin">print</span>(<span class="string">f"Камера </span>{i}<span class="string">"</span>)
-        cap.release()</pre></div></div>`},
-        
-        'cam-settings': { title: '⚙️ Настройки', content: `<h1>⚙️ Настройки</h1><table class="data-table"><tr><th>Параметр</th><th>Значение</th></tr>
-        <tr><td class="command">FRAME_WIDTH</td><td>3</td></tr><tr><td class="command">FRAME_HEIGHT</td><td>4</td></tr>
-        <tr><td class="command">BRIGHTNESS</td><td>10</td></tr><tr><td class="command">CONTRAST</td><td>11</td></tr></table>
-        <div class="code-block"><div class="code-content"><pre>cap.<span class="builtin">set</span>(cv2.CAP_PROP_FRAME_WIDTH, <span class="number">1920</span>)</pre></div></div>`},
-        
-        'cam-capture': { title: '🎥 Захват видео', content: `<h1>🎥 Захват видео</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> cv2
+    f.write(<span class="string">"Hello"</span>)
+
+<span class="comment"># Чтение</span>
+<span class="keyword">with</span> <span class="builtin">open</span>(<span class="string">'file.txt'</span>, <span class="string">'r'</span>) <span class="keyword">as</span> f:
+    text = f.read()</pre></div></div>`},
+
+        // Keyboard
+        'keyboard-lib': { title: '⌨️ Keyboard', content: `<h1>⌨️ Библиотека Keyboard</h1><span class="badge">pip install keyboard</span><div class="code-block"><div class="code-header"><span>Горячие клавиши</span><button class="copy-btn" onclick="copyCode(this)">📋</button></div><div class="code-content"><pre><span class="keyword">import</span> keyboard
+keyboard.add_hotkey(<span class="string">'ctrl+shift+a'</span>, <span class="keyword">lambda</span>: <span class="builtin">print</span>(<span class="string">'Hotkey!'</span>))
+keyboard.wait()</pre></div></div><table class="data-table"><tr><th>Функция</th><th>Описание</th></tr><tr><td class="command">keyboard.write()</td><td>Эмуляция ввода</td></tr><tr><td class="command">keyboard.press()</td><td>Нажать клавишу</td></tr><tr><td class="command">keyboard.is_pressed()</td><td>Проверка нажатия</td></tr><tr><td class="command">keyboard.record()</td><td>Запись нажатий</td></tr></table>`},
+
+        // OpenCV
+        'opencv': { title: '🎥 OpenCV', content: `<h1>🎥 OpenCV — компьютерное зрение</h1><span class="badge">pip install opencv-python</span><div class="code-block"><div class="code-header"><span>Захват видео</span><button class="copy-btn" onclick="copyCode(this)">📋</button></div><div class="code-content"><pre><span class="keyword">import</span> cv2
 cap = cv2.VideoCapture(<span class="number">0</span>)
 <span class="keyword">while</span> <span class="keyword">True</span>:
     ret, frame = cap.read()
-    cv2.imshow(<span class="string">'Cam'</span>, frame)
+    cv2.imshow(<span class="string">'Camera'</span>, frame)
     <span class="keyword">if</span> cv2.waitKey(<span class="number">1</span>) & <span class="number">0xFF</span> == <span class="builtin">ord</span>(<span class="string">'q'</span>): <span class="keyword">break</span>
-cap.release()</pre></div></div>`},
+cap.release()</pre></div></div><h2>Детектор лиц</h2><div class="code-block"><div class="code-content"><pre>face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + <span class="string">'haarcascade_frontalface_default.xml'</span>)
+faces = face_cascade.detectMultiScale(gray, <span class="number">1.1</span>, <span class="number">5</span>)</pre></div></div>`},
+
+        // Django
+        'django': { title: '🌐 Django', content: `<h1>🌐 Django — веб-фреймворк</h1><span class="badge">pip install django</span><div class="code-block"><div class="code-header"><span>Создание проекта</span><button class="copy-btn" onclick="copyCode(this)">📋</button></div><div class="code-content"><pre>django-admin startproject mysite
+cd mysite
+python manage.py startapp blog
+python manage.py runserver</pre></div></div><div class="code-block"><div class="code-header"><span>models.py</span></div><div class="code-content"><pre><span class="keyword">from</span> django.db <span class="keyword">import</span> models
+<span class="keyword">class</span> <span class="function">Post</span>(models.Model):
+    title = models.CharField(max_length=<span class="number">200</span>)
+    content = models.TextField()</pre></div></div>`},
         
-        'cam-face': { title: '😊 Детектор лиц', content: `<h1>😊 Детектор лиц</h1><div class="code-block"><div class="code-content"><pre>face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + <span class="string">'haarcascade_frontalface_default.xml'</span>)
-faces = face_cascade.detectMultiScale(gray, <span class="number">1.1</span>, <span class="number">5</span>)
-<span class="keyword">for</span> (x,y,w,h) <span class="keyword">in</span> faces:
-    cv2.rectangle(frame, (x,y), (x+w,y+h), (<span class="number">0</span>,<span class="number">255</span>,<span class="number">0</span>), <span class="number">2</span>)</pre></div></div>`},
-        
-        'cam-photo': { title: '📸 Сохранение', content: `<h1>📸 Сохранение фото</h1><div class="code-block"><div class="code-content"><pre>key = cv2.waitKey(<span class="number">1</span>)
-<span class="keyword">if</span> key == <span class="number">32</span>:  <span class="comment"># Пробел</span>
-    cv2.imwrite(<span class="string">'photo.jpg'</span>, frame)</pre></div></div>`},
-        
-        'cam-effects': { title: '🎨 Эффекты', content: `<h1>🎨 Эффекты</h1><div class="code-block"><div class="code-content"><pre>gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-blur = cv2.GaussianBlur(frame, (<span class="number">15</span>,<span class="number">15</span>), <span class="number">0</span>)
-edges = cv2.Canny(frame, <span class="number">100</span>, <span class="number">200</span>)</pre></div></div>`},
-        
-        'django': { title: '🌐 Django', content: `<h1>🌐 Django</h1><span class="badge">pip install django</span><div class="code-block"><div class="code-content"><pre>django-admin startproject mysite
-python manage.py runserver</pre></div></div>`},
-        
-        'flask': { title: '🌶️ Flask', content: `<h1>🌶️ Flask</h1><span class="badge">pip install flask</span><div class="code-block"><div class="code-content"><pre><span class="keyword">from</span> flask <span class="keyword">import</span> Flask
+        'flask': { title: '🌶️ Flask', content: `<h1>🌶️ Flask — микро-фреймворк</h1><span class="badge">pip install flask</span><div class="code-block"><div class="code-content"><pre><span class="keyword">from</span> flask <span class="keyword">import</span> Flask
 app = Flask(__name__)
 <span class="function">@app.route</span>(<span class="string">'/'</span>)
-<span class="keyword">def</span> <span class="function">home</span>(): <span class="keyword">return</span> <span class="string">"Hello"</span>
-app.run()</pre></div></div>`},
+<span class="keyword">def</span> <span class="function">home</span>(): <span class="keyword">return</span> <span class="string">"Hello!"</span>
+app.run(debug=<span class="keyword">True</span>)</pre></div></div>`},
         
         'fastapi': { title: '⚡ FastAPI', content: `<h1>⚡ FastAPI</h1><span class="badge">pip install fastapi uvicorn</span><div class="code-block"><div class="code-content"><pre><span class="keyword">from</span> fastapi <span class="keyword">import</span> FastAPI
 app = FastAPI()
 <span class="function">@app.get</span>(<span class="string">"/"</span>)
-<span class="keyword">def</span> <span class="function">root</span>(): <span class="keyword">return</span> {<span class="string">"msg"</span>: <span class="string">"Hello"</span>}</pre></div></div>`},
+<span class="keyword">async</span> <span class="keyword">def</span> <span class="function">root</span>(): <span class="keyword">return</span> {<span class="string">"msg"</span>: <span class="string">"Hello"</span>}</pre></div></div>`},
         
-        'requests': { title: '🌍 Requests', content: `<h1>🌍 Requests</h1><span class="badge">pip install requests</span><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> requests
+        'requests': { title: '🌍 Requests', content: `<h1>🌍 Requests — HTTP клиент</h1><span class="badge">pip install requests</span><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> requests
 r = requests.get(<span class="string">'https://api.github.com'</span>)
-<span class="builtin">print</span>(r.json())</pre></div></div>`},
-        
-        'aiohttp': { title: '🔄 Aiohttp', content: `<h1>🔄 Aiohttp</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">async</span> <span class="keyword">with</span> aiohttp.ClientSession() <span class="keyword">as</span> s:
-    <span class="keyword">async</span> <span class="keyword">with</span> s.get(url) <span class="keyword">as</span> r:
-        <span class="keyword">return</span> <span class="keyword">await</span> r.text()</pre></div></div>`},
-        
-        'pyqt6': { title: '🖥️ PyQt6', content: `<h1>🖥️ PyQt6</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">from</span> PyQt6.QtWidgets <span class="keyword">import</span> QApplication, QWidget
+<span class="builtin">print</span>(r.status_code, r.json())</pre></div></div>`},
+
+        // GUI
+        'pyqt6': { title: '🖥️ PyQt6', content: `<h1>🖥️ PyQt6</h1><span class="badge">pip install PyQt6</span><div class="code-block"><div class="code-content"><pre><span class="keyword">from</span> PyQt6.QtWidgets <span class="keyword">import</span> QApplication, QWidget
 app = QApplication([])
 w = QWidget(); w.show()
 app.exec()</pre></div></div>`},
         
         'tkinter': { title: '🪟 Tkinter', content: `<h1>🪟 Tkinter</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk
 root = tk.Tk()
-tk.Label(root, text=<span class="string">"Hi"</span>).pack()
+tk.Label(root, text=<span class="string">"Привет!"</span>).pack()
 root.mainloop()</pre></div></div>`},
+
+        // Библиотеки
+        'libs-data': { title: '📊 Data Science', content: `<h1>📊 Data Science</h1><div class="lib-grid"><div class="lib-card"><h4>NumPy</h4><p>Многомерные массивы</p><div class="install-cmd">pip install numpy</div></div><div class="lib-card"><h4>Pandas</h4><p>Анализ данных</p><div class="install-cmd">pip install pandas</div></div><div class="lib-card"><h4>Matplotlib</h4><p>Графики</p><div class="install-cmd">pip install matplotlib</div></div><div class="lib-card"><h4>Scikit-learn</h4><p>Машинное обучение</p><div class="install-cmd">pip install scikit-learn</div></div><div class="lib-card"><h4>TensorFlow</h4><p>Нейросети</p><div class="install-cmd">pip install tensorflow</div></div><div class="lib-card"><h4>PyTorch</h4><p>Deep Learning</p><div class="install-cmd">pip install torch</div></div></div>`},
         
-        'customtk': { title: '🎨 CustomTkinter', content: `<h1>🎨 CustomTkinter</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> customtkinter <span class="keyword">as</span> ctk
-app = ctk.CTk()
-ctk.CTkButton(app, text=<span class="string">"Кнопка"</span>).pack()
-app.mainloop()</pre></div></div>`},
-        
-        'kivy': { title: '📱 Kivy', content: `<h1>📱 Kivy</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">from</span> kivy.app <span class="keyword">import</span> App
-<span class="keyword">from</span> kivy.uix.button <span class="keyword">import</span> Button
-<span class="keyword">class</span> <span class="function">MyApp</span>(App):
-    <span class="keyword">def</span> <span class="function">build</span>(self): <span class="keyword">return</span> Button(text=<span class="string">'Hi'</span>)
-MyApp().run()</pre></div></div>`},
-        
-        'flet': { title: '📲 Flet', content: `<h1>📲 Flet</h1><div class="code-block"><div class="code-content"><pre><span class="keyword">import</span> flet <span class="keyword">as</span> ft
-<span class="keyword">def</span> <span class="function">main</span>(page): page.add(ft.Text(<span class="string">"Hi"</span>))
-ft.app(target=main)</pre></div></div>`},
-        
-        'libs-data': { title: '📊 Data Science', content: `<h1>📊 Data Science</h1><div class="lib-grid"><div class="lib-card"><h4>NumPy</h4><p>Массивы</p><div class="install-cmd">pip install numpy</div></div><div class="lib-card"><h4>Pandas</h4><p>DataFrame</p><div class="install-cmd">pip install pandas</div></div><div class="lib-card"><h4>Matplotlib</h4><p>Графики</p><div class="install-cmd">pip install matplotlib</div></div><div class="lib-card"><h4>Scikit-learn</h4><p>ML</p><div class="install-cmd">pip install scikit-learn</div></div><div class="lib-card"><h4>TensorFlow</h4><p>Нейросети</p><div class="install-cmd">pip install tensorflow</div></div><div class="lib-card"><h4>PyTorch</h4><p>Deep Learning</p><div class="install-cmd">pip install torch</div></div></div>`},
-        
-        'libs-cv': { title: '👁️ CV', content: `<h1>👁️ Компьютерное зрение</h1><div class="lib-grid"><div class="lib-card"><h4>OpenCV</h4><p>Обработка</p><div class="install-cmd">pip install opencv-python</div></div><div class="lib-card"><h4>Pillow</h4><p>Изображения</p><div class="install-cmd">pip install Pillow</div></div><div class="lib-card"><h4>MediaPipe</h4><p>Google CV</p><div class="install-cmd">pip install mediapipe</div></div><div class="lib-card"><h4>YOLO</h4><p>Детекция</p><div class="install-cmd">pip install ultralytics</div></div></div>`},
-        
-        'libs-system': { title: '⚙️ Системные', content: `<h1>⚙️ Системные</h1><div class="lib-grid"><div class="lib-card"><h4>os / sys</h4><p>Встроенные</p></div><div class="lib-card"><h4>psutil</h4><p>Система</p><div class="install-cmd">pip install psutil</div></div><div class="lib-card"><h4>keyboard</h4><p>Клавиатура</p><div class="install-cmd">pip install keyboard</div></div><div class="lib-card"><h4>pyautogui</h4><p>Автоматизация</p><div class="install-cmd">pip install pyautogui</div></div></div>`},
-        
-        'libs-new': { title: '🔥 Новые', content: `<h1>🔥 Новые 2025</h1><div class="lib-grid"><div class="lib-card"><h4>UV</h4><p>Менеджер пакетов</p><div class="install-cmd">pip install uv</div></div><div class="lib-card"><h4>Reflex</h4><p>Веб на Python</p><div class="install-cmd">pip install reflex</div></div><div class="lib-card"><h4>LangChain</h4><p>LLM</p><div class="install-cmd">pip install langchain</div></div><div class="lib-card"><h4>Streamlit</h4><p>Data apps</p><div class="install-cmd">pip install streamlit</div></div></div>`}
+        'libs-new': { title: '🔥 Новые 2025', content: `<h1>🔥 Новые фреймворки</h1><div class="lib-grid"><div class="lib-card"><h4>UV <span class="badge-new">NEW</span></h4><p>Менеджер пакетов на Rust</p><div class="install-cmd">pip install uv</div></div><div class="lib-card"><h4>Reflex</h4><p>Веб на Python</p><div class="install-cmd">pip install reflex</div></div><div class="lib-card"><h4>LangChain</h4><p>LLM приложения</p><div class="install-cmd">pip install langchain</div></div><div class="lib-card"><h4>Streamlit</h4><p>Data apps</p><div class="install-cmd">pip install streamlit</div></div><div class="lib-card"><h4>NiceGUI</h4><p>UI без JavaScript</p><div class="install-cmd">pip install nicegui</div></div><div class="lib-card"><h4>Flet</h4><p>Flutter на Python</p><div class="install-cmd">pip install flet</div></div></div>`}
     };
 
     const navStructure = {
-        basics: { title: '🐍 Основы', items: ['print-input','variables','operators','conditions','loops','functions','lists','dicts','strings','files'] },
-        camera: { title: '📷 OpenCV', items: ['cam-list','cam-settings','cam-capture','cam-face','cam-photo','cam-effects'] },
-        web: { title: '🌐 Веб', items: ['django','flask','fastapi','requests','aiohttp'] },
-        gui: { title: '🖥️ GUI', items: ['pyqt6','tkinter','customtk','kivy','flet'] },
-        libs: { title: '📦 Библиотеки', items: ['libs-data','libs-cv','libs-system','libs-new'] }
+        basics: { title: '🐍 Основы Python', items: ['print-input','variables','operators','conditions','loops','functions','lists','dicts','strings','files'] },
+        special: { title: '⌨️ Специальные', items: ['keyboard-lib'] },
+        camera: { title: '📷 OpenCV', items: ['opencv'] },
+        web: { title: '🌐 Веб-фреймворки', items: ['django','flask','fastapi','requests'] },
+        gui: { title: '🖥️ GUI', items: ['pyqt6','tkinter'] },
+        libs: { title: '📦 Библиотеки', items: ['libs-data','libs-new'] }
     };
 
+    // Глобальные переменные
+    let currentDevice = localStorage.getItem('pythonMasterDevice') || null;
+    let selectedDevice = currentDevice;
     let viewedSections = JSON.parse(localStorage.getItem('pythonMasterViewed') || '[]');
-    let currentTab = 'learn';
+
+    // Функции устройства
+    function selectDevice(device) {
+        selectedDevice = device;
+        document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById(`select${device === 'phone' ? 'Phone' : 'PC'}`).classList.add('selected');
+    }
+
+    function applyDevice() {
+        if (!selectedDevice) selectedDevice = 'pc';
+        currentDevice = selectedDevice;
+        localStorage.setItem('pythonMasterDevice', currentDevice);
+        applyDeviceMode(currentDevice);
+        document.getElementById('deviceModal').classList.add('hidden');
+        document.getElementById('appContainer').classList.add('visible');
+        updateDeviceToggle();
+    }
+
+    function autoDetect() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        selectDevice(isMobile ? 'phone' : 'pc');
+        applyDevice();
+    }
+
+    function applyDeviceMode(device) {
+        document.body.classList.remove('phone-mode', 'pc-mode');
+        document.body.classList.add(device === 'phone' ? 'phone-mode' : 'pc-mode');
+        document.querySelector('.main-container').style.display = device === 'phone' ? 'block' : 'flex';
+    }
+
+    function updateDeviceToggle() {
+        document.getElementById('deviceIcon').textContent = currentDevice === 'phone' ? '📱' : '💻';
+        document.getElementById('deviceLabel').textContent = currentDevice === 'phone' ? 'Телефон' : 'ПК';
+    }
+
+    function showDeviceModal() {
+        document.getElementById('deviceModal').classList.remove('hidden');
+        document.getElementById('appContainer').classList.remove('visible');
+        selectDevice(currentDevice || 'pc');
+    }
 
     function toggleMenu() {
-        document.getElementById('navSidebarContainer').classList.add('open');
-        document.getElementById('overlay').classList.add('show');
-        document.body.style.overflow = 'hidden';
+        if (currentDevice === 'phone') {
+            document.getElementById('navSidebarContainer').classList.add('open');
+            document.getElementById('overlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeMenu() {
@@ -422,103 +1247,11 @@ ft.app(target=main)</pre></div></div>`},
             section.items.forEach(id => {
                 const info = courseContent[id] || { title: id };
                 const completed = viewedSections.includes(id) ? 'completed' : '';
-                html += `<div class="nav-item ${completed}" onclick="loadContent('${id}'); closeMenu();">${info.title}</div>`;
+                html += `<div class="nav-item ${completed}" onclick="loadContent('${id}'); if(currentDevice==='phone')closeMenu();">${info.title}</div>`;
             });
             html += '</div>';
         }
         document.getElementById('navSidebar').innerHTML = html;
-    }
-
-    function renderTasks() {
-        document.getElementById('tasks-content').innerHTML = `
-            <div class="wiki-article">
-                <h1>💪 Практические задания</h1>
-                <div class="task-card">
-                    <div class="task-header"><span class="task-title">📝 Калькулятор</span><span class="difficulty easy">Лёгкий</span></div>
-                    <div class="task-description">Напишите калькулятор с операциями +, -, *, /. Обработайте деление на ноль.</div>
-                    <details><summary>📖 Показать решение</summary><div class="code-block" style="margin-top:15px;"><div class="code-content"><pre>a = float(input("Первое: "))
-b = float(input("Второе: "))
-op = input("Операция: ")
-if op == "+": print(a + b)
-elif op == "-": print(a - b)
-elif op == "*": print(a * b)
-elif op == "/":
-    if b != 0: print(a / b)
-    else: print("Деление на ноль!")</pre></div></div></details>
-                </div>
-                <div class="task-card">
-                    <div class="task-header"><span class="task-title">🔢 FizzBuzz</span><span class="difficulty easy">Лёгкий</span></div>
-                    <div class="task-description">Числа 1-100: кратно 3 - Fizz, 5 - Buzz, 3 и 5 - FizzBuzz.</div>
-                    <details><summary>📖 Показать решение</summary><div class="code-block" style="margin-top:15px;"><div class="code-content"><pre>for i in range(1, 101):
-    if i % 3 == 0 and i % 5 == 0: print("FizzBuzz")
-    elif i % 3 == 0: print("Fizz")
-    elif i % 5 == 0: print("Buzz")
-    else: print(i)</pre></div></div></details>
-                </div>
-                <div class="task-card">
-                    <div class="task-header"><span class="task-title">📂 Файлы</span><span class="difficulty medium">Средний</span></div>
-                    <div class="task-description">Запишите 1-10 в файл, прочитайте и выведите сумму.</div>
-                    <details><summary>📖 Показать решение</summary><div class="code-block" style="margin-top:15px;"><div class="code-content"><pre>with open('nums.txt', 'w') as f:
-    for i in range(1, 11): f.write(f"{i}\\n")
-total = 0
-with open('nums.txt', 'r') as f:
-    for line in f: total += int(line)
-print(total)</pre></div></div></details>
-                </div>
-                <div class="task-card">
-                    <div class="task-header"><span class="task-title">🔐 Пароль</span><span class="difficulty medium">Средний</span></div>
-                    <div class="task-description">Генератор пароля 12 символов (буквы, цифры, спецсимволы).</div>
-                    <details><summary>📖 Показать решение</summary><div class="code-block" style="margin-top:15px;"><div class="code-content"><pre>import random, string
-chars = string.ascii_letters + string.digits + "!@#$%"
-pwd = ''.join(random.choice(chars) for _ in range(12))
-print(pwd)</pre></div></div></details>
-                </div>
-                <div class="task-card">
-                    <div class="task-header"><span class="task-title">📷 Детектор лиц</span><span class="difficulty hard">Сложный</span></div>
-                    <div class="task-description">OpenCV: веб-камера, детектор лиц, зелёная рамка.</div>
-                    <details><summary>📖 Показать решение</summary><div class="code-block" style="margin-top:15px;"><div class="code-content"><pre>import cv2
-fc = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-cap = cv2.VideoCapture(0)
-while True:
-    ret, frame = cap.read()
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = fc.detectMultiScale(gray, 1.1, 5)
-    for (x,y,w,h) in faces: cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
-    cv2.imshow('Faces', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'): break
-cap.release()</pre></div></div></details>
-                </div>
-            </div>
-        `;
-    }
-
-    function renderGitHub() {
-        document.getElementById('github-content').innerHTML = `
-            <div class="wiki-article">
-                <h1>🔗 GitHub и деплой</h1>
-                <h2>📦 Git команды</h2>
-                <table class="data-table"><tr><th>Команда</th><th>Описание</th></tr>
-                <tr><td class="command">git init</td><td>Инициализация</td></tr>
-                <tr><td class="command">git add .</td><td>Добавить все</td></tr>
-                <tr><td class="command">git commit -m "msg"</td><td>Коммит</td></tr>
-                <tr><td class="command">git push</td><td>Отправить</td></tr>
-                <tr><td class="command">git pull</td><td>Получить</td></tr>
-                <tr><td class="command">git clone URL</td><td>Клонировать</td></tr></table>
-                <h2>🚀 Хостинги</h2>
-                <div class="lib-grid">
-                    <div class="lib-card"><h4>PythonAnywhere</h4><p>Бесплатный</p><div class="install-cmd">pythonanywhere.com</div></div>
-                    <div class="lib-card"><h4>Render</h4><p>Автодеплой</p><div class="install-cmd">render.com</div></div>
-                    <div class="lib-card"><h4>Vercel</h4><p>Flask/FastAPI</p><div class="install-cmd">vercel.com</div></div>
-                </div>
-                <h2>🐳 Docker</h2>
-                <div class="code-block"><div class="code-content"><pre><span class="keyword">FROM</span> python:3.11
-<span class="keyword">WORKDIR</span> /app
-<span class="keyword">COPY</span> requirements.txt .
-<span class="keyword">RUN</span> pip install -r requirements.txt
-<span class="keyword">COPY</span> . .
-<span class="keyword">CMD</span> [<span class="string">"python"</span>, <span class="string">"app.py"</span>]</pre></div></div>
-            </div>
-        `;
     }
 
     function loadContent(id) {
@@ -534,14 +1267,49 @@ cap.release()</pre></div></div></details>
     }
 
     function switchTab(tab) {
-        currentTab = tab;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
         document.getElementById(`${tab}-page`).classList.add('active');
-        
         if (tab === 'tasks') renderTasks();
         else if (tab === 'github') renderGitHub();
+    }
+
+    function renderTasks() {
+        document.getElementById('tasks-content').innerHTML = `
+            <div class="wiki-article">
+                <h1>💪 Практические задания</h1>
+                <div class="task-card"><div class="task-header"><span class="task-title">📝 Калькулятор</span><span class="difficulty easy">Лёгкий</span></div><p>Калькулятор с +, -, *, /. Обработайте деление на ноль.</p><details><summary>📖 Решение</summary><div class="code-block"><div class="code-content"><pre>a=float(input("A:"));b=float(input("B:"));op=input("Op:")
+if op=="+":print(a+b)
+elif op=="-":print(a-b)
+elif op=="*":print(a*b)
+elif op=="/":print(a/b if b!=0 else "Ошибка")</pre></div></div></details></div>
+                <div class="task-card"><div class="task-header"><span class="task-title">🔢 FizzBuzz</span><span class="difficulty easy">Лёгкий</span></div><p>1-100: /3=Fizz, /5=Buzz, /15=FizzBuzz</p><details><summary>📖 Решение</summary><div class="code-block"><div class="code-content"><pre>for i in range(1,101):
+    if i%15==0:print("FizzBuzz")
+    elif i%3==0:print("Fizz")
+    elif i%5==0:print("Buzz")
+    else:print(i)</pre></div></div></details></div>
+            </div>`;
+    }
+
+    function renderGitHub() {
+        document.getElementById('github-content').innerHTML = `
+            <div class="wiki-article">
+                <h1>🔗 GitHub и деплой</h1>
+                <table class="data-table"><tr><th>Команда</th><th>Описание</th></tr>
+                <tr><td class="command">git init</td><td>Инициализация</td></tr>
+                <tr><td class="command">git add .</td><td>Добавить всё</td></tr>
+                <tr><td class="command">git commit -m ""</td><td>Коммит</td></tr>
+                <tr><td class="command">git push</td><td>Отправить</td></tr>
+                <tr><td class="command">git pull</td><td>Получить</td></tr>
+                <tr><td class="command">git clone URL</td><td>Клонировать</td></tr></table>
+                <h2>🚀 Хостинги</h2>
+                <div class="lib-grid">
+                    <div class="lib-card"><h4>Render</h4><p>Автодеплой из GitHub</p><div class="install-cmd">render.com</div></div>
+                    <div class="lib-card"><h4>Vercel</h4><p>Для Flask/FastAPI</p><div class="install-cmd">vercel.com</div></div>
+                    <div class="lib-card"><h4>PythonAnywhere</h4><p>Бесплатный хостинг</p><div class="install-cmd">pythonanywhere.com</div></div>
+                </div>
+            </div>`;
     }
 
     function updateProgress() {
@@ -554,17 +1322,36 @@ cap.release()</pre></div></div></details>
     function copyCode(btn) {
         const code = btn.closest('.code-block').querySelector('pre').innerText;
         navigator.clipboard.writeText(code).then(() => {
-            btn.textContent = '✅ Скопировано!';
-            setTimeout(() => btn.textContent = '📋 Копировать', 2000);
-        }).catch(() => {
-            alert('Не удалось скопировать');
+            btn.textContent = '✅';
+            setTimeout(() => btn.textContent = '📋', 1500);
         });
     }
 
     // Инициализация
-    renderNavSidebar();
-    updateProgress();
-    loadContent('print-input');
+    if (currentDevice) {
+        applyDeviceMode(currentDevice);
+        document.getElementById('deviceModal').classList.add('hidden');
+        document.getElementById('appContainer').classList.add('visible');
+        updateDeviceToggle();
+        renderNavSidebar();
+        updateProgress();
+        loadContent('print-input');
+    } else {
+        document.getElementById('deviceModal').classList.remove('hidden');
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        selectDevice(isMobile ? 'phone' : 'pc');
+        renderNavSidebar();
+    }
+
+    window.selectDevice = selectDevice;
+    window.applyDevice = applyDevice;
+    window.autoDetect = autoDetect;
+    window.showDeviceModal = showDeviceModal;
+    window.toggleMenu = toggleMenu;
+    window.closeMenu = closeMenu;
+    window.loadContent = loadContent;
+    window.switchTab = switchTab;
+    window.copyCode = copyCode;
 </script>
 
 </body>
